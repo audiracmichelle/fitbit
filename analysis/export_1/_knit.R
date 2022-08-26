@@ -70,11 +70,6 @@ md_txt <- readLines(md_filename)
 md_txt <- gsub(paste0(getwd(), "/_knit/"), "./", md_txt)
 cat(md_txt, file=md_filename, sep="\n")
 
-md_filename <- "./_knit/summaries.md"
-md_txt <- readLines(md_filename)
-md_txt <- gsub(paste0(getwd(), "/_knit/"), "./", md_txt)
-cat(md_txt, file=md_filename, sep="\n")
-
 rmarkdown::render(
   "./plot_time_use.Rmd", 
   output_dir = "./_knit"
