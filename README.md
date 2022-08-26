@@ -37,3 +37,6 @@ devtools::install_git("https://github.com/audiracmichelle/fitibble")
 └── ...
 ```
 
+  * [./analysis/export_1/](./analysis/export_1/)
+     * [./analysis/export_1/prep_minute_data.Rmd](./analysis/export_1/_knit/prep_minute_data.md) Reads input datasets and performs joins using the `fitibble::read_fitabase_files` function.
+
