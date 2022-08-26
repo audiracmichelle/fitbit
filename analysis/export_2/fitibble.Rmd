@@ -1,0 +1,103 @@
+# summaries
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+library(fitibble)
+```
+
+* test fitibble class
+
+```{r}
+minute_data <- read_rds("../../data/prep/minute_data__export_2.rds") 
+
+minute_data <- fitibble:::new_fitibble(
+  minute_data, 
+  intensity_colname = "intensity", 
+  intensity_levels = c(sedentary = "0", 
+                       light = "1", 
+                       moderate = "2", 
+                       active = "3")
+)
+
+attr(minute_data, "intensity_colname")
+attr(minute_data, "intensity_levels")
+class(minute_data)
+```
+
+```{r}
+minute_data$is_wear = T
+minute_data$is_adherent = T
+minute_data$is_valid_day = T
+fitibble:::validate_fitibble(minute_data)
+```
+
+```{r}
+sum(minute_data$is_wear & minute_data$is_adherent & minute_data$is_valid_day)
+```
+
+* test fitibble function
+
+```{r}
+#use fitibble function
+minute_data <- read_rds("../../data/prep/minute_data__export_2.rds") %>% 
+  fitibble()
+fitibble:::validate_fitibble(minute_data)
+```
+
+```{r}
+sum(minute_data$is_wear & minute_data$is_adherent & minute_data$is_valid_day)
+sum(minute_data$is_wear & minute_data$is_adherent & !minute_data$is_valid_day)
+```
+
+* test relevel_fittible function
+
+```{r}
+minute_data$nonsense <- 1
+try(relevel_fitibble(
+  minute_data, 
+  intensity_colname = "nonsense", 
+  intensity_levels = c(fool = "3")
+  ))
+#an error should appear
+```
+
+```{r}
+minute_data$nonsense <- 1
+relevel_fitibble(
+  minute_data, 
+  intensity_colname = "nonsense", 
+  intensity_levels = c(fool = "1")
+  )
+```
+
+* test crop_valid function
+```{r}
+valid_data <- crop_valid(minute_data, mask = T)
+sum(valid_data$is_valid)
+sum(!is.na(valid_data$HR))
+sum(!is.na(valid_data$steps))
+sum(!is.na(valid_data$intensity))
+```
+
+```{r}
+valid_data <- crop_valid(minute_data)
+nrow(valid_data)
+```
+
+
+* test crop_nonvalid function
+
+```{r}
+nonvalid_data <- crop_nonvalid(minute_data, mask = T)
+sum(nonvalid_data$is_nonvalid)
+sum(!is.na(nonvalid_data$HR))
+sum(!is.na(nonvalid_data$steps))
+sum(!is.na(nonvalid_data$intensity))
+```
+
+```{r}
+nonvalid_data <- crop_nonvalid(minute_data)
+nrow(nonvalid_data)
+```

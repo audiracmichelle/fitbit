@@ -1,0 +1,26 @@
+# plot_missingness
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+library(fitibble)
+```
+
+```{r}
+minute_data <- read_rds("../../data/prep/minute_data__export_2.rds") %>% 
+  fitibble()
+```
+
+```{r}
+n <- 10
+id_ <- unique(minute_data$id)
+index <- round(seq(0, length(id_), length.out = n))
+p <- list()
+for(i in 1:(n - 1)) {
+  p[[i]] <- minute_data %>% 
+    filter(id %in% id_[(index[i] + 1):index[i + 1]]) %>% 
+    plot_missingness(calendar_time = F)
+}
+p
+```
