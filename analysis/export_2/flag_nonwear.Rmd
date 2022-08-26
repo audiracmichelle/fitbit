@@ -1,0 +1,320 @@
+# flag_nonwear
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(fitibble)
+```
+
+```{r}
+minute_data <- readRDS("../../data/prep/minute_data__export_2.rds")
+```
+
+## choi HR
+
+```{r}
+#apply flag_choi directly to missing HR
+minute_data %<>% 
+  group_by(id) %>% 
+  mutate(nonwear = flag_choi(1 - is.na(HR))) %>% 
+  ungroup()
+
+minute_data %>% 
+  group_by(id) %>% 
+  summarise(
+    n = n(), 
+    is_zero_steps = sum(steps == 0, na.rm = T), 
+    nonwear = sum(nonwear), 
+    is_na_HR = sum(is.na(HR))
+  )
+```
+
+```{r}
+# #choose example
+# minute_data %>% 
+#   mutate(date = as.Date(time)) %>% 
+#   group_by(id, date) %>% 
+#   summarise(
+#     diff = sum(is.na(HR)) - sum(nonwear), 
+#     steps_na_hr = sum(is.na(HR) & steps)
+#     ) %>% 
+#   arrange(desc(diff)) %>% View()
+
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  filter(id == 10, date == as.Date("2020-07-02")) %>%
+  mutate(
+    xmin = time, 
+    xmax = lag(time), 
+    nonwear = as.factor(nonwear), 
+    steps = (steps - min(0, steps)) / max(1, steps), 
+    HR = (HR - min(0, HR, na.rm = T)) / max(1, HR, na.rm = T)
+    ) %>% 
+  select(time, xmin, xmax, nonwear, steps, HR)  %>% 
+  ggplot() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=-Inf, ymax=Inf, fill=nonwear), alpha = 0.5) + 
+  geom_line(aes(x = time, y = steps)) + 
+  geom_point(aes(x = time, y = HR), color = "white", size = 0.5) + 
+  geom_line(aes(x = time, y = HR), color = "white")
+```
+
+```{r}
+#apply flag_choi_HR
+
+minute_data %<>% 
+  group_by(id) %>% 
+  mutate(nonwear = flag_choi_HR(HR)) %>% 
+  ungroup()
+
+minute_data %>% 
+  group_by(id) %>% 
+  summarise(
+    n = n(), 
+    is_zero_steps = sum(steps == 0, na.rm = T), 
+    nonwear = sum(nonwear), 
+    is_na_HR = sum(is.na(HR))
+  )
+```
+
+```{r}
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  filter(id == 45, date == as.Date("2022-02-05")) %>% 
+  mutate(
+    xmin = time, 
+    xmax = lag(time), 
+    nonwear = as.factor(nonwear)
+    ) %>% 
+  select(time, xmin, xmax, nonwear, steps, HR)  %>% 
+  ggplot() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=-Inf, ymax=Inf, fill=nonwear), alpha = 0.5) + 
+  geom_line(aes(x = time, y = steps), size = 2) +
+  geom_point(aes(x = time, y = HR), color = "white", size = 0.5) + 
+  geom_line(aes(x = time, y = HR), color = "white")
+  
+```
+
+## choi steps
+
+```{r}
+#apply flag_choi_steps 
+minute_data %<>% 
+  group_by(id) %>% 
+  mutate(nonwear = flag_choi_steps(steps)) %>% 
+  ungroup()
+
+minute_data %>% 
+  group_by(id) %>% 
+  summarise(
+    n = n(), 
+    is_zero_steps = sum(steps == 0, na.rm = T), 
+    nonwear = sum(nonwear), 
+    is_na_HR = sum(is.na(HR))
+  )
+```
+
+```{r}
+# #choose example
+# minute_data %>% 
+#   mutate(date = as.Date(time)) %>% 
+#   group_by(id, date) %>% 
+#   summarise(diff = sum(nonwear) - sum(is.na(HR))) %>% 
+#   arrange(desc(diff)) %>% View()
+
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  filter(id == 1, date == as.Date("2019-02-08")) %>% 
+  mutate(
+    xmin = time, 
+    xmax = lag(time), 
+    nonwear = as.factor(nonwear), 
+    steps = (steps - min(0, steps)) / max(1, steps), 
+    HR = (HR - min(HR, na.rm = T)) / max(HR, na.rm = T)
+    ) %>% 
+  select(time, xmin, xmax, nonwear, steps, HR)  %>% 
+  ggplot() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=-Inf, ymax=Inf, fill=nonwear), alpha = 0.5) + 
+  geom_line(aes(x = time, y = steps)) + 
+  geom_line(aes(x = time, y = HR), color = "white")
+```
+
+```{r}
+#choose example
+# minute_data %>% 
+#   mutate(date = as.Date(time)) %>% 
+#   group_by(id, date) %>% 
+#   summarise(diff = sum(nonwear) - sum(steps == 0)) %>% 
+#   arrange(diff) %>%  View()
+
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  filter(id == 12, date == as.Date("2020-01-10")) %>% 
+  mutate(
+    xmin = time, 
+    xmax = lag(time), 
+    nonwear = as.factor(nonwear), 
+    is_na_hr = as.factor(is.na(HR)),
+    steps = (steps - min(steps)) / max(steps), 
+    HR = (HR - min(HR, na.rm = T)) / max(HR, na.rm = T)
+    ) %>% 
+  select(time, xmin, xmax, nonwear, is_na_hr, steps, HR)  %>% 
+  ggplot() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=-Inf, ymax=Inf, fill=nonwear), alpha = 0.5) +  
+  geom_line(aes(x = time, y = steps)) + 
+  geom_line(aes(x = time, y = HR), color = "white")
+```
+
+```{r}
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  filter(id == 5, date == as.Date("2019-11-18")) %>% 
+  mutate(
+    xmin = time, 
+    xmax = lag(time), 
+    nonwear = as.factor(nonwear), 
+    steps = (steps - min(steps)) / max(steps), 
+    HR = (HR - min(HR, na.rm = T)) / max(HR, na.rm = T)
+    ) %>% 
+  select(time, xmin, xmax, nonwear, steps, HR)  %>% 
+  ggplot() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=-Inf, ymax=Inf, fill=nonwear), alpha = 0.5) + 
+  geom_line(aes(x = time, y = steps)) + 
+  geom_line(aes(x = time, y = HR), color = "white")
+```
+
+## comparison
+
+```{r}
+minute_data %<>% 
+  select(-nonwear) %>% 
+  group_by(id) %>% 
+  mutate(
+    nonwear_missing_HR = flag_nonwear(HR, steps, nonwear_method = "missing_HR"), 
+    nonwear_missing_HR_zero_steps = flag_nonwear(HR, steps, nonwear_method = "missing_HR_zero_steps"), 
+    nonwear_choi_HR = flag_nonwear(HR, steps, nonwear_method = "choi_HR"),
+    nonwear_choi_steps = flag_nonwear(HR, steps, nonwear_method = "choi_steps")
+    )
+```
+
+```{r}
+minute_data %>% 
+  group_by(id) %>% 
+  summarise(
+    across(contains("nonwear"), sum)
+  ) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear")) %>% 
+  mutate(ratio = missing_HR / choi_HR) %>% 
+  arrange(desc(ratio))
+```
+
+```{r}
+minute_data %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear")) %>% 
+  mutate(date = as.Date(time)) %>% 
+  filter(id == 16) %>% 
+  group_by(date) %>% 
+  summarise(diff = sum(missing_HR) - sum(choi_HR)) %>% 
+  arrange(desc(diff))
+```
+
+```{r}
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear")) %>% 
+  filter(id == 16, date == as.Date("2020-05-16")) %>% 
+  mutate(
+    xmin = time, 
+    xmax = lag(time), 
+    nonwear = as.factor(choi_HR), 
+    steps = (steps - min(steps)) / max(steps), 
+    HR = (HR - min(HR, na.rm = T)) / max(HR, na.rm = T)
+    ) %>% 
+  select(time, xmin, xmax, nonwear, steps, HR)  %>% 
+  ggplot() + 
+  geom_rect(aes(xmin=xmin, xmax=xmax, ymin=-Inf, ymax=Inf, fill=nonwear), alpha = 0.5) + 
+  geom_line(aes(x = time, y = steps)) + 
+  geom_line(aes(x = time, y = HR), color = "white")
+```
+
+* total number of nonwear entries flagged by each method 
+
+Applying choi algorithm to steps appears to be pretty problematic in the case of sedentary subjects. The total number of nonwear entries is much higher than it should be.
+
+```{r}
+minute_data <- readRDS("../../data/prep/minute_data__export_2.rds") %>%  
+  group_by(id) %>% 
+  mutate(
+    nonwear_missing_HR = flag_nonwear(HR, steps, nonwear_method = "missing_HR"), 
+    nonwear_missing_HR_zero_steps = flag_nonwear(HR, steps, nonwear_method = "missing_HR_zero_steps"), 
+    nonwear_choi_HR = flag_nonwear(HR, steps, nonwear_method = "choi_HR"),
+    nonwear_choi_steps = flag_nonwear(HR, steps, nonwear_method = "choi_steps")
+    )
+
+minute_data %>% 
+  group_by(id) %>% 
+  summarise(
+    across(contains("nonwear"), sum)
+  ) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear"))
+```
+
+* mean daily nonwear per method
+
+```{r}
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  group_by(id, date) %>% 
+  summarise(across(contains("nonwear"), sum)) %>% 
+  group_by(id) %>% 
+  summarise(
+    across(
+      contains("nonwear"), 
+      list(mean = ~ mean(.x)), 
+      "{.col}_{.fn}"
+      )
+    ) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear"))
+
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  group_by(id, date) %>% 
+  summarise(across(contains("nonwear"), sum)) %>% 
+  group_by(id) %>% 
+  summarise(
+    across(
+      contains("nonwear"), 
+      list(q50 = ~ quantile(.x, 0.50)), 
+      "{.col}_{.fn}"
+      )
+    ) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear"))
+
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  group_by(id, date) %>% 
+  summarise(across(contains("nonwear"), sum)) %>% 
+  group_by(id) %>% 
+  summarise(
+    across(
+      contains("nonwear"), 
+      list(q25 = ~ quantile(.x, 0.25)), 
+      "{.col}_{.fn}"
+      )
+    ) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear"))
+
+minute_data %>% 
+  mutate(date = as.Date(time)) %>% 
+  group_by(id, date) %>% 
+  summarise(across(contains("nonwear"), sum)) %>% 
+  group_by(id) %>% 
+  summarise(
+    across(
+      contains("nonwear"), 
+      list(q75 = ~ quantile(.x, 0.75)), 
+      "{.col}_{.fn}"
+      )
+    ) %>% 
+  rename_with(~gsub("nonwear_", "", .x), .cols = contains("nonwear"))
+```
+

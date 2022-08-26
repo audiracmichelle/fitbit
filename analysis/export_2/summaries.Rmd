@@ -1,0 +1,65 @@
+# summaries
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+library(fitibble)
+
+minute_data <- read_rds("../../data/prep/minute_data__export_2.rds") %>% 
+  fitibble(nonwear_method = "choi_HR")
+```
+
+```{r}
+prep_daily_data(minute_data)
+```
+
+```{r}
+fitibble:::prep_wear_summary(minute_data)
+```
+
+```{r}
+fitibble:::prep_valid_wear_summary(minute_data)
+```
+
+```{r}
+fitibble:::prep_nonvalid_wear_summary(minute_data)
+```
+
+```{r}
+prep_patient_summary(minute_data)
+```
+
+```{r}
+prep_daily_summary(minute_data)
+```
+
+* relevel and compare daily summary
+
+```{r}
+minute_data$cutpoints[minute_data$steps < 15] <- 0
+minute_data$cutpoints[minute_data$steps >= 15 & minute_data$steps < 60] <- 1
+minute_data$cutpoints[minute_data$steps >= 60] <- 2
+minute_data %>% 
+  relevel_fitibble(
+    intensity_colname = "cutpoints", 
+    intensity_levels = c(sed = "0", lipa = "1", mvpa = "2")) %>% 
+  prep_daily_summary(sedentary_level = c(sed = "0"))
+```
+
+```{r}
+daily_summary <- prep_daily_summary(minute_data)
+
+daily_summary %>% 
+  plot_ci(type = "basic")
+```
+
+```{r}
+daily_summary %>% 
+  plot_ci(type = "sedentary_behavior")
+```
+
+```{r}
+daily_summary %>% 
+  plot_ci(type = "time_use")
+```
