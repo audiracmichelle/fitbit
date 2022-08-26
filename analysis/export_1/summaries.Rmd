@@ -1,0 +1,107 @@
+# summaries
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+#library(rapportools)
+library(fitibble)
+
+minute_data <- read_rds("../../data/prep/minute_data__export_1.rds") %>% 
+  fitibble(nonwear_method = "choi_HR")
+```
+
+```{r}
+prep_daily_data(minute_data)
+```
+
+```{r}
+prep_daily_data(minute_data, nonvalid = T)
+```
+
+```{r}
+prep_daily_summary(minute_data)
+```
+
+```{r}
+prep_daily_summary(minute_data, nonvalid = T)
+```
+
+```{r}
+fitibble:::prep_wear_summary(minute_data)
+```
+
+```{r}
+fitibble:::prep_valid_wear_summary(minute_data)
+```
+
+```{r}
+fitibble:::prep_nonvalid_wear_summary(minute_data)
+```
+
+```{r}
+prep_patient_summary(minute_data)
+```
+
+```{r}
+prep_daily_summary(minute_data) %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_HR", 
+                            sd_varname = "sd_HR")
+
+prep_daily_summary(minute_data) %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_steps", 
+                            sd_varname = "sd_steps")
+```
+
+```{r}
+prep_daily_summary(minute_data) %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_zero_steps_prop", 
+                            sd_varname = "sd_zero_steps_prop")
+
+prep_daily_summary(minute_data) %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_zero_steps_prop", 
+                            sd_varname = "sd_zero_steps_time_prop", 
+                            type = "categorical")
+```
+
+```{r}
+daily_summary <- prep_daily_summary(minute_data)
+
+daily_summary %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_sedentary_time_use", 
+                            sd_varname = "sd_sedentary_time_use", 
+                            type = "categorical")
+
+daily_summary %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_light_time_use", 
+                            sd_varname = "sd_light_time_use", 
+                            type = "categorical")
+
+daily_summary %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_moderate_time_use", 
+                            sd_varname = "sd_moderate_time_use", 
+                            type = "categorical")
+
+daily_summary %>% 
+  fitibble:::plot_confidence_intervals(mu_varname = "mu_active_time_use", 
+                            sd_varname = "sd_active_time_use", 
+                            type = "categorical")
+```
+
+```{r}
+daily_summary %>% 
+  plot_ci()
+daily_summary %>% 
+  plot_ci(critical_value = qt(p=.05/2, df=4, lower.tail=FALSE))
+```
+
+```{r}
+daily_summary %>% 
+  plot_ci(type = "sedentary_behavior")
+```
+
+```{r}
+daily_summary %>% 
+  plot_ci(type = "time_use")
+```
+

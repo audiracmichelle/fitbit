@@ -1,0 +1,109 @@
+# plot_time_use
+
+
+```r
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+#library(rapportools) craziest thing happens with sum(c(1,2,3), na.rm = TRUE)
+library(fitibble)
+
+minute_data <- read_rds("../../data/prep/minute_data__export_1.rds") %>% 
+  fitibble(nonwear_method = "choi_HR")
+```
+
+
+```r
+library(RColorBrewer)
+
+id = 1
+
+intensity_levels <- attr(minute_data, "intensity_levels")
+color_palette <- brewer.pal(length(intensity_levels), "Oranges")
+names(color_palette) <- names(intensity_levels)
+
+prep_daily_data(minute_data) %>%
+  dplyr::filter(id == 1) %>% 
+  dplyr::select("id", "date", tidyselect::contains("time_use")) %>% 
+  tidyr::pivot_longer(cols = contains("time_use")) %>% 
+  mutate(
+    name = gsub("_time_use", "", name), 
+    name = factor(name, levels = names(sort(intensity_levels, decreasing = T)))
+  ) %>% 
+  ggplot() + 
+  geom_bar(aes(x=date, y=value, fill=name), stat="identity") +
+  theme_minimal() + 
+  theme(legend.position = "bottom") + 
+  ggplot2::scale_fill_manual(values = color_palette) + 
+  ggplot2::guides(fill = ggplot2::guide_legend("Intensity levels"))
+```
+
+```
+## Joining, by = c("id", "date")
+```
+
+```
+## Warning: Removed 2840 rows containing missing values (position_stack).
+```
+
+![](./plot_time_use_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+
+```r
+prep_daily_data(minute_data, nonvalid = T) %>%
+  dplyr::filter(id == 1) %>% 
+  dplyr::select("id", "date", tidyselect::contains("time_use")) %>% 
+  tidyr::pivot_longer(cols = contains("time_use")) %>% 
+  mutate(
+    name = gsub("_time_use", "", name), 
+    name = factor(name, levels = names(sort(intensity_levels, decreasing = T)))
+  ) %>% 
+  ggplot() + 
+  geom_bar(aes(x=date, y=value, fill=name), stat="identity") +
+  theme_minimal() + 
+  theme(legend.position = "bottom") + 
+  ggplot2::scale_fill_manual(values = color_palette) + 
+  ggplot2::guides(fill = ggplot2::guide_legend("Intensity levels"))
+```
+
+```
+## Joining, by = c("id", "date")
+```
+
+```
+## Warning: Removed 3744 rows containing missing values (position_stack).
+```
+
+![](./plot_time_use_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+
+```r
+plot_time_use(minute_data, id = 1)
+```
+
+```
+## Joining, by = c("id", "date")
+## Joining, by = c("id", "date")
+```
+
+```
+## Warning: Removed 6584 rows containing missing values (position_stack).
+```
+
+![](./plot_time_use_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
+
+```r
+plot_time_use(minute_data, id = 2)
+```
+
+```
+## Joining, by = c("id", "date")
+## Joining, by = c("id", "date")
+```
+
+```
+## Warning: Removed 248 rows containing missing values (position_stack).
+```
+
+![](./plot_time_use_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
