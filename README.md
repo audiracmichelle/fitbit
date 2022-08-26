@@ -29,11 +29,15 @@ devtools::install_git("https://github.com/audiracmichelle/fitibble")
 ```
 .
 ├── ...
-├── analysis                # Documentation files (notebooks)
+├── analysis                # Documentation files
 │   ├── export_1            # Folder containing notebooks that explore `export_1` datasets.
 │   │    └── ...            
 │   └── export_2            # Folder containing notebooks that explore `export_2` datasets.
 │        └── ...            
 └── ...
 ```
+
+  * [./analysis/export_1/](./analysis/export_1/)
+     * [./analysis/export_1/prep_minute_data.Rmd](./analysis/export_1/_knit/prep_minute_data.md) Reads input datasets and performs joins using the `fitibble::read_fitabase_files` function.
+     * [./analysis/export_1/flag_nonwear.Rmd](./analysis/export_1/_knit/flag_nonwear.md) Identifies minutes of wear with multiple methods implemented in the function `fitibble::flag_nonwear`.
 
