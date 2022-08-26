@@ -1,0 +1,43 @@
+# prep_minute_data
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+library(fitibble)
+```
+
+```{r}
+fitabase_files <- read_fitabase_files("../../data/input/export_1.zip")
+fitabase_files$files
+```
+
+```{r}
+fitabase_files$time_period
+```
+
+```{r}
+lapply(fitabase_files$raw_HR_list, function(x) summary(x$HR))
+lapply(fitabase_files$raw_steps_list, function(x) summary(x$steps))
+lapply(fitabase_files$raw_intensity_list, function(x) summary(as.factor(x$intensity)))
+```
+
+```{r}
+minute_data <- prep_minute_data(fitabase_files)
+minute_data[1:10, ] %>%
+  mutate(hour = hour(time),
+         weekday = wday(as.Date(time), label = TRUE))
+```
+
+```{r}
+xx <- minute_data %>% 
+  group_by(id, label) %>% 
+  summarise(HR_is_missing = sum(is.na(HR)), 
+            steps_is_missing = sum(is.na(steps)))
+xx
+```
+
+```{r}
+write_rds(fitabase_files, "../../data/prep/fitabase_files__export_1.rds")
+write_rds(minute_data, "../../data/prep/minute_data__export_1.rds")
+```
